@@ -1,0 +1,27 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "idgmcadf001dev"
+		},
+		"idgmckeystore_properties_typeProperties_baseUrl": {
+			"value": "https://idgmckeystore.vault.azure.cn/"
+		},
+		"idgmcstr001dev_properties_typeProperties_connectionString_secretName": {
+			"value": "idgmcstr001dev"
+		},
+		"idgmchdfs001_properties_typeProperties_url": {
+			"value": "https://idgmchdfs001.dfs.core.chinacloudapi.cn"
+		},
+		"idgmcgdi001dev_properties_typeProperties_userName": {
+			"value": "admin"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}

@@ -1,0 +1,133 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "idgmcadf001dev"
+		},
+		"idgmckeystore_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://idgmckeystore.vault.azure.cn/"
+		},
+		"idgmcstr001dev_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "idgmcstr001dev"
+		},
+		"idgmchdfs001_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://idgmchdfs001.dfs.core.chinacloudapi.cn"
+		},
+		"idgmcgdi001dev_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "admin"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/idgmckeystore')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('idgmckeystore_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/idgmcstr001dev')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "idgmckeystore",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "[parameters('idgmcstr001dev_properties_typeProperties_connectionString_secretName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/idgmckeystore')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/msiidentiy')]",
+			"type": "Microsoft.DataFactory/factories/credentials",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "ManagedIdentity",
+				"typeProperties": {
+					"resourceId": "/subscriptions/0f2daa80-6b16-44ee-8016-4ad888e059ac/resourceGroups/hditest/providers/Microsoft.ManagedIdentity/userAssignedIdentities/idgmcmsi001"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/idgmchdfs001')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('idgmchdfs001_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "idgmckeystore",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "idgmchdfs001"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/idgmckeystore')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/idgmcgdi001dev')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "HDInsight",
+				"typeProperties": {
+					"clusterUri": "https://idgmcgdi001dev.azurehdinsight.cn",
+					"userName": "[parameters('idgmcgdi001dev_properties_typeProperties_userName')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "idgmckeystore",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "idgmcgdi001devadmin"
+					},
+					"isEspEnabled": false,
+					"fileSystem": "idgmcgdi001dev",
+					"linkedServiceName": {
+						"referenceName": "idgmchdfs001",
+						"type": "LinkedServiceReference"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/idgmchdfs001')]",
+				"[concat(variables('factoryId'), '/linkedServices/idgmckeystore')]"
+			]
+		}
+	]
+}
