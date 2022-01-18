@@ -1,0 +1,25 @@
+{
+	"name": "idgmcgdi001dev",
+	"properties": {
+		"annotations": [],
+		"type": "HDInsight",
+		"typeProperties": {
+			"clusterUri": "https://idgmcgdi001dev.azurehdinsight.cn",
+			"userName": "admin",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "idgmckeystore",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "idgmcgdi001devadmin"
+			},
+			"isEspEnabled": false,
+			"fileSystem": "idgmcgdi001dev",
+			"linkedServiceName": {
+				"referenceName": "idgmchdfs001",
+				"type": "LinkedServiceReference"
+			}
+		}
+	}
+}
