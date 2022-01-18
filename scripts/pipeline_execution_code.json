@@ -1,0 +1,25 @@
+{
+    
+    "executions": [
+        {
+            "sourcefile": "scripts/spark/spark_copy_hvac.py",
+            "adfreference": [ 
+                { 
+                    "itemtype": "activity",
+                    "itemname": "sparkquery",
+                    "rootpath": "scripts"
+                }
+            ]
+        },
+        {
+            "sourcefile": "scripts/hive/alltables.hql",
+            "adfreference": [ 
+                { 
+                    "itemtype": "dataset",
+                    "itemname": "alltables_hql",
+                    "rootpath": "rawcode"
+                }
+            ]
+        }
+    ]   
+}

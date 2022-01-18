@@ -1,0 +1,17 @@
+{
+	"name": "idgmcstr001dev",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobStorage",
+		"typeProperties": {
+			"connectionString": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "idgmckeystore",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "idgmcstr001dev"
+			}
+		}
+	}
+}
