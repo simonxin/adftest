@@ -4,7 +4,15 @@
 		"annotations": [],
 		"type": "AzureBlobFS",
 		"typeProperties": {
-			"url": "https://idgmchdfs001.dfs.core.chinacloudapi.cn"
+			"url": "https://idgmchdfs001.dfs.core.chinacloudapi.cn",
+			"accountKey": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "idgmckeystore",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "idgmchdfs001"
+			}
 		}
 	}
 }
