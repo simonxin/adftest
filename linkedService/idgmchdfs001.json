@@ -1,0 +1,10 @@
+{
+	"name": "idgmchdfs001",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://idgmchdfs001.dfs.core.chinacloudapi.cn"
+		}
+	}
+}
