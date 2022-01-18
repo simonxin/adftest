@@ -1,0 +1,45 @@
+{
+	"name": "adlsgen2",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "idgmchdfs001",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "HVAC.csv",
+				"folderPath": "HdiSamples/HdiSamples/SensorSampleData/hvac",
+				"fileSystem": "idgmcgdi001dev"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			}
+		]
+	}
+}
