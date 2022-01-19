@@ -1,9 +1,0 @@
-{
-	"name": "idgmcadf001dev",
-	"location": "chinaeast2",
-	"identity": {
-		"type": "SystemAssigned",
-		"principalId": "36896b38-62f3-49ad-a379-769a8e393233",
-		"tenantId": "954ddad8-66d7-47a8-8f9f-1316152d9587"
-	}
-}
