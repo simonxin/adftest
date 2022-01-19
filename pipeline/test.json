@@ -26,9 +26,14 @@
 						}
 					},
 					"sink": {
-						"type": "BinarySink",
+						"type": "DelimitedTextSink",
 						"storeSettings": {
 							"type": "AzureBlobStorageWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ""
 						}
 					},
 					"enableStaging": false
@@ -41,7 +46,7 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "alltables_hql",
+						"referenceName": "targetstr",
 						"type": "DatasetReference"
 					}
 				]
