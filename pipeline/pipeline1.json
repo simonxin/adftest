@@ -1,6 +1,14 @@
 {
 	"name": "pipeline1",
 	"properties": {
+		"activities": [
+			{
+				"name": "adftest_tag",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": []
+			}
+		],
 		"annotations": []
 	}
 }
