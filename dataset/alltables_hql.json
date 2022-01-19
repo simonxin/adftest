@@ -1,5 +1,5 @@
 {
-	"name": "execution_code",
+	"name": "alltables_hql",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "idgmcstr001dev",
