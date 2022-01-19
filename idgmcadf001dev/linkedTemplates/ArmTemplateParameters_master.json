@@ -5,17 +5,17 @@
 		"factoryName": {
 			"value": "idgmcadf001dev"
 		},
+		"idgmcgdi001dev_properties_typeProperties_userName": {
+			"value": "admin"
+		},
+		"idgmchdfs001_properties_typeProperties_url": {
+			"value": "https://idgmchdfs001.dfs.core.chinacloudapi.cn"
+		},
 		"idgmckeystore_properties_typeProperties_baseUrl": {
 			"value": "https://idgmckeystore.vault.azure.cn/"
 		},
 		"idgmcstr001dev_properties_typeProperties_connectionString_secretName": {
 			"value": "idgmcstr001dev"
-		},
-		"idgmchdfs001_properties_typeProperties_url": {
-			"value": "https://idgmchdfs001.dfs.core.chinacloudapi.cn"
-		},
-		"idgmcgdi001dev_properties_typeProperties_userName": {
-			"value": "admin"
 		},
 		"containerUri": {
 			"value": ""

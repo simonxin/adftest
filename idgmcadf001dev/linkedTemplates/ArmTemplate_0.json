@@ -11,13 +11,13 @@
 			"type": "string",
 			"defaultValue": "https://idgmckeystore.vault.azure.cn/"
 		},
-		"idgmcstr001dev_properties_typeProperties_connectionString_secretName": {
-			"type": "string",
-			"defaultValue": "idgmcstr001dev"
-		},
 		"idgmchdfs001_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://idgmchdfs001.dfs.core.chinacloudapi.cn"
+		},
+		"idgmcstr001dev_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "idgmcstr001dev"
 		},
 		"idgmcgdi001dev_properties_typeProperties_userName": {
 			"type": "string",
@@ -54,26 +54,38 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/idgmcstr001dev')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"name": "[concat(parameters('factoryName'), '/test')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"annotations": [],
-				"type": "AzureBlobStorage",
-				"typeProperties": {
-					"connectionString": {
-						"type": "AzureKeyVaultSecret",
-						"store": {
-							"referenceName": "idgmckeystore",
-							"type": "LinkedServiceReference"
-						},
-						"secretName": "[parameters('idgmcstr001dev_properties_typeProperties_connectionString_secretName')]"
+				"activities": [
+					{
+						"name": "adftest_tag",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "name",
+							"value": {
+								"value": "@pipeline().Pipeline",
+								"type": "Expression"
+							}
+						}
 					}
-				}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"variables": {
+					"name": {
+						"type": "String",
+						"defaultValue": "1"
+					}
+				},
+				"annotations": []
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/idgmckeystore')]"
-			]
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/idgmchdfs001')]",
@@ -96,6 +108,134 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/idgmckeystore')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/idgmcstr001dev')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "idgmckeystore",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "[parameters('idgmcstr001dev_properties_typeProperties_connectionString_secretName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/idgmckeystore')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/job_schedule_1')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "test",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Minute",
+						"interval": 1,
+						"startTime": "2022-01-19T01:36:00Z",
+						"timeZone": "UTC"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/test')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/adlsgen2')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "idgmchdfs001",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "HVAC.csv",
+						"folderPath": "HdiSamples/HdiSamples/SensorSampleData/hvac",
+						"fileSystem": "idgmcgdi001dev"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/idgmchdfs001')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/targetstr')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "idgmcstr001dev",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "output"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/idgmcstr001dev')]"
 			]
 		},
 		{
@@ -127,6 +267,111 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/idgmchdfs001')]",
 				"[concat(variables('factoryId'), '/linkedServices/idgmckeystore')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sparkjob')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "sparkquery",
+						"type": "HDInsightSpark",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"rootPath": "scripts",
+							"entryFilePath": "sample.py",
+							"sparkJobLinkedService": {
+								"referenceName": "idgmcstr001dev",
+								"type": "LinkedServiceReference"
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "idgmcgdi001dev",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "sparkquery",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings",
+									"copyBehavior": "MergeFiles"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": "result.txt"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "adlsgen2",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "targetstr",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/idgmcstr001dev')]",
+				"[concat(variables('factoryId'), '/linkedServices/idgmcgdi001dev')]",
+				"[concat(variables('factoryId'), '/datasets/adlsgen2')]",
+				"[concat(variables('factoryId'), '/datasets/targetstr')]"
 			]
 		}
 	]

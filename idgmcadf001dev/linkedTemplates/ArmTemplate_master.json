@@ -7,6 +7,14 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "idgmcadf001dev"
 		},
+		"idgmcgdi001dev_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "admin"
+		},
+		"idgmchdfs001_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://idgmchdfs001.dfs.core.chinacloudapi.cn"
+		},
 		"idgmckeystore_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://idgmckeystore.vault.azure.cn/"
@@ -14,14 +22,6 @@
 		"idgmcstr001dev_properties_typeProperties_connectionString_secretName": {
 			"type": "string",
 			"defaultValue": "idgmcstr001dev"
-		},
-		"idgmchdfs001_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://idgmchdfs001.dfs.core.chinacloudapi.cn"
-		},
-		"idgmcgdi001dev_properties_typeProperties_userName": {
-			"type": "string",
-			"defaultValue": "admin"
 		},
 		"containerUri": {
 			"type": "string",
@@ -53,11 +53,11 @@
 					"idgmckeystore_properties_typeProperties_baseUrl": {
 						"value": "[parameters('idgmckeystore_properties_typeProperties_baseUrl')]"
 					},
-					"idgmcstr001dev_properties_typeProperties_connectionString_secretName": {
-						"value": "[parameters('idgmcstr001dev_properties_typeProperties_connectionString_secretName')]"
-					},
 					"idgmchdfs001_properties_typeProperties_url": {
 						"value": "[parameters('idgmchdfs001_properties_typeProperties_url')]"
+					},
+					"idgmcstr001dev_properties_typeProperties_connectionString_secretName": {
+						"value": "[parameters('idgmcstr001dev_properties_typeProperties_connectionString_secretName')]"
 					},
 					"idgmcgdi001dev_properties_typeProperties_userName": {
 						"value": "[parameters('idgmcgdi001dev_properties_typeProperties_userName')]"
