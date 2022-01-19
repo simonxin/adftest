@@ -1,0 +1,16 @@
+{
+	"name": "targetstr",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "idgmcstr001dev",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation"
+			}
+		}
+	}
+}
