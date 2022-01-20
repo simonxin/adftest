@@ -54,40 +54,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/test')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "adftest_tag",
-						"type": "SetVariable",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "name",
-							"value": {
-								"value": "@pipeline().Pipeline",
-								"type": "Expression"
-							}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"variables": {
-					"name": {
-						"type": "String",
-						"defaultValue": "1"
-					}
-				},
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/idgmchdfs001')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -130,36 +96,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/idgmckeystore')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/job_schedule_1')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "test",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Minute",
-						"interval": 1,
-						"startTime": "2022-01-19T01:36:00Z",
-						"timeZone": "UTC"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/test')]"
 			]
 		},
 		{
@@ -213,32 +149,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/targetstr')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "idgmcstr001dev",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "output"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"quoteChar": "\""
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/idgmcstr001dev')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/idgmcgdi001dev')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -270,6 +180,51 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/alltables_hql')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "idgmcstr001dev",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": "*",
+						"container": "scripts"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/idgmcstr001dev')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/targetstr')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "idgmcstr001dev",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "scripts"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/idgmcstr001dev')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/sparkjob')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -278,7 +233,14 @@
 					{
 						"name": "sparkquery",
 						"type": "HDInsightSpark",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "preparehivequery",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "7.00:00:00",
 							"retry": 0,
@@ -301,16 +263,9 @@
 						}
 					},
 					{
-						"name": "Copy data1",
+						"name": "preparehivequery",
 						"type": "Copy",
-						"dependsOn": [
-							{
-								"activity": "sparkquery",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
+						"dependsOn": [],
 						"policy": {
 							"timeout": "7.00:00:00",
 							"retry": 0,
@@ -321,33 +276,91 @@
 						"userProperties": [],
 						"typeProperties": {
 							"source": {
-								"type": "DelimitedTextSource",
+								"type": "BinarySource",
 								"storeSettings": {
-									"type": "AzureBlobFSReadSettings",
-									"recursive": true,
-									"enablePartitionDiscovery": false
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true
 								},
 								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
+									"type": "BinaryReadSettings"
 								}
 							},
 							"sink": {
-								"type": "DelimitedTextSink",
+								"type": "BinarySink",
 								"storeSettings": {
-									"type": "AzureBlobStorageWriteSettings",
-									"copyBehavior": "MergeFiles"
-								},
-								"formatSettings": {
-									"type": "DelimitedTextWriteSettings",
-									"quoteAllText": true,
-									"fileExtension": "result.txt"
+									"type": "AzureBlobStorageWriteSettings"
 								}
 							},
 							"enableStaging": false
 						},
 						"inputs": [
 							{
-								"referenceName": "adlsgen2",
+								"referenceName": "alltables_hql",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "alltables_hql",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/idgmcstr001dev')]",
+				"[concat(variables('factoryId'), '/linkedServices/idgmcgdi001dev')]",
+				"[concat(variables('factoryId'), '/datasets/alltables_hql')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/test')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "preparehivequery",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "BinarySource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true
+								},
+								"formatSettings": {
+									"type": "BinaryReadSettings"
+								}
+							},
+							"sink": {
+								"type": "BinarySink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "alltables_hql",
 								"type": "DatasetReference",
 								"parameters": {}
 							}
@@ -365,13 +378,47 @@
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
 				},
+				"variables": {
+					"name": {
+						"type": "String",
+						"defaultValue": "1"
+					}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/idgmcstr001dev')]",
-				"[concat(variables('factoryId'), '/linkedServices/idgmcgdi001dev')]",
-				"[concat(variables('factoryId'), '/datasets/adlsgen2')]",
+				"[concat(variables('factoryId'), '/datasets/alltables_hql')]",
 				"[concat(variables('factoryId'), '/datasets/targetstr')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/job_schedule_1')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "test",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Minute",
+						"interval": 1,
+						"startTime": "2022-01-19T01:36:00Z",
+						"timeZone": "UTC"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/test')]"
 			]
 		}
 	]
