@@ -79,7 +79,7 @@
 				]
 			},
 			{
-				"name": "Hive1",
+				"name": "hivejobs",
 				"type": "HDInsightHive",
 				"dependsOn": [
 					{
@@ -98,7 +98,11 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"scriptPath": ""
+					"scriptPath": "",
+					"scriptLinkedService": {
+						"referenceName": "idgmcstr001dev",
+						"type": "LinkedServiceReference"
+					}
 				},
 				"linkedServiceName": {
 					"referenceName": "idgmcgdi001dev",
