@@ -447,48 +447,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/job_schedule_1')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "test",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Minute",
-						"interval": 1,
-						"startTime": "2022-01-19T01:36:00Z",
-						"timeZone": "UTC"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/test')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/msiidentiy')]",
-			"type": "Microsoft.DataFactory/factories/credentials",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "ManagedIdentity",
-				"typeProperties": {
-					"resourceId": "/subscriptions/0f2daa80-6b16-44ee-8016-4ad888e059ac/resourceGroups/hditest/providers/Microsoft.ManagedIdentity/userAssignedIdentities/idgmcmsi001"
-				}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/remote_storage')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -509,6 +467,49 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/idgmckeystore')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/job_schedule_1')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "test",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2022-01-19T01:36:00Z",
+						"timeZone": "UTC",
+						"schedule": {}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/test')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/msiidentiy')]",
+			"type": "Microsoft.DataFactory/factories/credentials",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "ManagedIdentity",
+				"typeProperties": {
+					"resourceId": "/subscriptions/0f2daa80-6b16-44ee-8016-4ad888e059ac/resourceGroups/hditest/providers/Microsoft.ManagedIdentity/userAssignedIdentities/idgmcmsi001"
+				}
+			},
+			"dependsOn": []
 		}
 	]
 }
