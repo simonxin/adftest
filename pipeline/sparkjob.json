@@ -22,7 +22,7 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"rootPath": "scripts",
+					"rootPath": "scripts/HDInsightSpark",
 					"entryFilePath": "sample.py",
 					"sparkJobLinkedService": {
 						"referenceName": "idgmcstr001dev",
