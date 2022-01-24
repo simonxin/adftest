@@ -146,6 +146,38 @@
 							"referenceName": "idgmcgdi001dev",
 							"type": "LinkedServiceReference"
 						}
+					},
+					{
+						"name": "sparkquery_copy_parallel",
+						"type": "HDInsightSpark",
+						"dependsOn": [
+							{
+								"activity": "preparehivequery",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"rootPath": "scripts/HDInsightSpark",
+							"entryFilePath": "spark_copy_hvac.py",
+							"sparkJobLinkedService": {
+								"referenceName": "idgmcstr001dev",
+								"type": "LinkedServiceReference"
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "idgmcgdi001dev",
+							"type": "LinkedServiceReference"
+						}
 					}
 				],
 				"policy": {
