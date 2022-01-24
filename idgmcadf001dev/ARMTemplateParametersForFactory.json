@@ -16,6 +16,9 @@
 		},
 		"idgmcstr001dev_properties_typeProperties_connectionString_secretName": {
 			"value": "idgmcstr001dev"
+		},
+		"remote_storage_properties_typeProperties_connectionString_secretName": {
+			"value": "mcvmreinf"
 		}
 	}
 }

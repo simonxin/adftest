@@ -19,6 +19,10 @@
 			"type": "string",
 			"defaultValue": "idgmcstr001dev"
 		},
+		"remote_storage_properties_typeProperties_connectionString_secretName": {
+			"type": "string",
+			"defaultValue": "mcvmreinf"
+		},
 		"idgmcgdi001dev_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "admin"
@@ -99,6 +103,28 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/remote_storage')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "idgmckeystore",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "[parameters('remote_storage_properties_typeProperties_connectionString_secretName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/idgmckeystore')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/adlsgen2')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -149,37 +175,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/idgmcgdi001dev')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "HDInsight",
-				"typeProperties": {
-					"clusterUri": "https://idgmcgdi001dev.azurehdinsight.cn",
-					"userName": "[parameters('idgmcgdi001dev_properties_typeProperties_userName')]",
-					"password": {
-						"type": "AzureKeyVaultSecret",
-						"store": {
-							"referenceName": "idgmckeystore",
-							"type": "LinkedServiceReference"
-						},
-						"secretName": "idgmcgdi001devadmin"
-					},
-					"isEspEnabled": false,
-					"fileSystem": "idgmcgdi001dev",
-					"linkedServiceName": {
-						"referenceName": "idgmchdfs001",
-						"type": "LinkedServiceReference"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/idgmchdfs001')]",
-				"[concat(variables('factoryId'), '/linkedServices/idgmckeystore')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/alltables_hql')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -225,6 +220,37 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/idgmcgdi001dev')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "HDInsight",
+				"typeProperties": {
+					"clusterUri": "https://idgmcgdi001dev.azurehdinsight.cn",
+					"userName": "[parameters('idgmcgdi001dev_properties_typeProperties_userName')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "idgmckeystore",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "idgmcgdi001devadmin"
+					},
+					"isEspEnabled": false,
+					"fileSystem": "idgmcgdi001dev",
+					"linkedServiceName": {
+						"referenceName": "idgmchdfs001",
+						"type": "LinkedServiceReference"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/idgmchdfs001')]",
+				"[concat(variables('factoryId'), '/linkedServices/idgmckeystore')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/sparkjob')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -250,7 +276,7 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"rootPath": "scripts",
+							"rootPath": "scripts/HDInsightSpark",
 							"entryFilePath": "sample.py",
 							"sparkJobLinkedService": {
 								"referenceName": "idgmcstr001dev",
@@ -307,6 +333,37 @@
 								"parameters": {}
 							}
 						]
+					},
+					{
+						"name": "hivejobs",
+						"type": "HDInsightHive",
+						"dependsOn": [
+							{
+								"activity": "sparkquery",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"scriptPath": "scripts/HDInsightHive/alltables.hql",
+							"scriptLinkedService": {
+								"referenceName": "idgmcstr001dev",
+								"type": "LinkedServiceReference"
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "idgmcgdi001dev",
+							"type": "LinkedServiceReference"
+						}
 					}
 				],
 				"policy": {
