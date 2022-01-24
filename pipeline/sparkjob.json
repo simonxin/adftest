@@ -130,7 +130,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"rootPath": "scripts/HDInsightSpark",
-					"entryFilePath": "sample.py",
+					"entryFilePath": "spark_copy_hvac.py",
 					"sparkJobLinkedService": {
 						"referenceName": "idgmcstr001dev",
 						"type": "LinkedServiceReference"
