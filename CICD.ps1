@@ -475,7 +475,7 @@ if ($predeployment -eq $true) {
     if ($updateexecutioncode -eq $true) {
         # update executon code with giving params in kvurl
         Write-Host "upload execution code from local git source"
-        upload_adf_execution_code -armtemplate $armtemplate -parameters $parameters -kvurl $kvurl
+        upload_adf_execution_code -armtemplate $armtemplate -parameters $parameters -kvurl $kvurl -rootexecutioncodepath $rootexecutioncodepath
 
     } else {
         
