@@ -402,11 +402,9 @@ function upload_adf_execution_code {
                     write-host "use kvurl: " $executionfile.keyvault
 
                     $secretname =$executionfile.secret
-                    $secret = Get-AzKeyVaultSecret -VaultName $vaultname -name $secretname 
-                    $connectstring = $secret.SecretValueText
+                    $secret = Get-AzKeyVaultSecret -VaultName $vaultname -name $secretname -AsPlainText
+                    $connectstring = $secret
 
-                    write-host $secret
-        
                     $ctx = New-AzStorageContext -ConnectionString $connectstring
                     $filename =  $executionfile.blob.split("/")[-1].tostring()
 
