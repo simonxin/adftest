@@ -35,6 +35,7 @@ param
     [parameter(Mandatory = $false)] [Bool] $predeployment=$true,
     [parameter(Mandatory = $false)] [Bool] $deleteDeployment=$false,
     [parameter(Mandatory = $false)] [Bool] $updateexecutioncode=$false,
+    [parameter(Mandatory = $false)] [string] $rootexecutioncodepath="executioncode",
     [Parameter(Mandatory=$false)][string]$kvurl
 )
 
@@ -338,7 +339,7 @@ function download_adf_execution_code {
        foreach ($executionfile in $execution_code_hash[$key]) {
            
             # add local folder if not exists
-            $localpath = "./$rootexecutioncodepath/$($executionfile.pipeline)/$($executionfile.activity)"
+            $localpath = "$rootexecutioncodepath/$($executionfile.pipeline)/$($executionfile.activity)"
             if(!(test-path -path $localpath)) {
                 mkdir $localpath
             }
@@ -402,7 +403,9 @@ function upload_adf_execution_code {
                         # upload the exact file only
                         if ($file.name -like $filename) {
                             # make a copy of current script to archived or with a release number
-                            Start-AzStorageBlobCopy -SrcBlob  $executionfile.blob -SrcContainer  $executionfile.container -DestContainer  $executionfile.container -DestBlob $executionfile.blob+"_archived" -erroraction ignore
+                            write-host "updated file $filename to " $executionfile.blob
+                            $archived_blob = $executionfile.blob.tostring() +"_archived"
+                            Start-AzStorageBlobCopy -SrcBlob  $executionfile.blob -SrcContainer  $executionfile.container -DestContainer  $executionfile.container -DestBlob $archived_blob -Context $ctx  -erroraction ignore
                             # upload the script content
                             set-AzStorageBlobContent -File $file.fullname -Container $executionfile.container -Blob $executionfile.blob -Context $ctx -force
                         }
@@ -459,10 +462,10 @@ if ($predeployment -eq $true) {
         Write-Host "Stopping trigger" $_.Name
         Stop-AzDataFactoryV2Trigger -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Name $_.Name -Force
     }
-}
-else {
+} else {
     if ($updateexecutioncode -eq $true) {
         # update executon code with giving params in kvurl
+        Write-Host "upload execution code from local git source"
         upload_adf_execution_code -armtemplate $armtemplate -parameters $parameters -kvurl $kvurl
 
     } else {
@@ -546,18 +549,26 @@ else {
             Write-Host "Deleting ARM deployment ... under resource group: " $ResourceGroupName
             $deployments = Get-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName
             $deploymentsToConsider = $deployments | Where { $_.DeploymentName -like "ArmTemplate_master*" -or $_.DeploymentName -like "ArmTemplateForFactory*" } | Sort-Object -Property Timestamp -Descending
-            $deploymentName = $deploymentsToConsider[0].DeploymentName
+            
+            if ($deploymentsToConsider) { 
 
-        Write-Host "Deployment to be deleted: " $deploymentName
-            $deploymentOperations = Get-AzResourceGroupDeploymentOperation -DeploymentName $deploymentName -ResourceGroupName $ResourceGroupName
-            $deploymentsToDelete = $deploymentOperations | Where { $_.properties.targetResource.id -like "*Microsoft.Resources/deployments*" }
+                $deploymentName = $deploymentsToConsider[0].DeploymentName
 
-            $deploymentsToDelete | ForEach-Object { 
-                Write-host "Deleting inner deployment: " $_.properties.targetResource.id
-                Remove-AzResourceGroupDeployment -Id $_.properties.targetResource.id
+                Write-Host "Deployment to be deleted: " $deploymentName
+                $deploymentOperations = Get-AzResourceGroupDeploymentOperation -DeploymentName $deploymentName -ResourceGroupName $ResourceGroupName
+                $deploymentsToDelete = $deploymentOperations | Where { $_.properties.targetResource.id -like "*Microsoft.Resources/deployments*" }
+    
+                $deploymentsToDelete | ForEach-Object { 
+                    Write-host "Deleting inner deployment: " $_.properties.targetResource.id
+                    Remove-AzResourceGroupDeployment -Id $_.properties.targetResource.id
+                }
+                Write-Host "Deleting deployment: " $deploymentName
+                Remove-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -Name $deploymentName
+
+            } else {
+                write-host "skip as no new ARM deployment from devops"
             }
-            Write-Host "Deleting deployment: " $deploymentName
-            Remove-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -Name $deploymentName
+
         }
 
         #Start active triggers - after cleanup efforts
