@@ -414,7 +414,7 @@ function upload_adf_execution_code {
                             # make a copy of current script to archived or with a release number
                             write-host "updated file $filename to " $executionfile.blob
                             $archived_blob = $executionfile.blob.tostring() +"_archived"
-                            Start-AzStorageBlobCopy -SrcBlob  $executionfile.blob -SrcContainer  $executionfile.container -DestContainer  $executionfile.container -DestBlob $archived_blob -Context $ctx  -erroraction ignore
+                            Start-AzStorageBlobCopy -SrcBlob  $executionfile.blob -SrcContainer  $executionfile.container -DestContainer  $executionfile.container -DestBlob $archived_blob -Context $ctx -force -erroraction ignore
                             # upload the script content
                             set-AzStorageBlobContent -File $file.fullname -Container $executionfile.container -Blob $executionfile.blob -Context $ctx -force
                         }
