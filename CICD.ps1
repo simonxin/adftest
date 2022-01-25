@@ -291,7 +291,14 @@ function get_adf_executon_code_map {
                     if ( $connectstring.type -eq 'AzureKeyVaultSecret') {
                         # get the keyvault store url and secret name for connect string
                         $keyvaultlink = $resourcehasharray['Microsoft.DataFactory/factories/linkedservices'] | where {$_.name -like $connectstring.store.referenceName} 
-                        $keyvault = $keyvaultlink.properties.typeProperties.baseUrl
+
+                        # override vault url if existing
+                        if ($kvurl -ne "") {
+                            $keyvault = $kvurl
+                        } else {
+                            $keyvault = $keyvaultlink.properties.typeProperties.baseUrl
+                        }
+
                         $secret = $connectstring.secretName
 
                         # add the execution code reference
@@ -382,6 +389,7 @@ function upload_adf_execution_code {
            
             # add local folder if not exists
             $localpath = "$rootexecutioncodepath/$($executionfile.pipeline)/$($executionfile.activity)"
+            write-host "execution code is in $localpath"
 
             # only upload the executon code if local folder existing
             if(test-path -path $localpath) {
@@ -394,8 +402,9 @@ function upload_adf_execution_code {
                     $secretname =$executionfile.secret
                     $secret = Get-AzKeyVaultSecret -VaultName $vaultname -name $secretname 
                     $connectstring = $secret.SecretValueText
+
+                    write-host $connectstring
         
-                    # download the execution code from storage and save to local path
                     $ctx = New-AzStorageContext -ConnectionString $connectstring
                     $filename =  $executionfile.blob.split("/")[-1].tostring()
 
