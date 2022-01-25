@@ -399,6 +399,8 @@ function upload_adf_execution_code {
                 if ($files) {
                     
                     $vaultname = $executionfile.keyvault.split(".",2)[0].split("//")[-1].tostring()
+                    write-host "use kvurl: " $executionfile.keyvault
+
                     $secretname =$executionfile.secret
                     $secret = Get-AzKeyVaultSecret -VaultName $vaultname -name $secretname 
                     $connectstring = $secret.SecretValueText
