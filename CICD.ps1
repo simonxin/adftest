@@ -327,10 +327,11 @@ function download_adf_execution_code {
     param (
         [Parameter(Mandatory=$true)][string]$armtemplate,
         [Parameter(Mandatory=$true)][string]$parameters,
+        [Parameter(Mandatory=$false)][string]$kvurl="",
         [Parameter(Mandatory=$false)][string]$rootexecutioncodepath="executioncode"
     )
 
-    $execution_code_hash = get_adf_executon_code_map -armtemplate $armtemplate -parameters $parameters
+    $execution_code_hash = get_adf_executon_code_map -armtemplate $armtemplate -parameters $parameters -kvurl $kvurl
 
     foreach ($key in $execution_code_hash.keys) {
 
@@ -349,7 +350,7 @@ function download_adf_execution_code {
 
             # make destination as a local file path
             $filename =  $executionfile.blob.split("/")[-1].tostring()
-            $destination = $localpath + "/" +$filename 
+            $destination = $localpath + "/" + $filename 
 
             # download the execution code from storage and save to local path
             $ctx = New-AzStorageContext -ConnectionString $connectstring
@@ -462,7 +463,7 @@ if ($predeployment -eq $true) {
 else {
     if ($updateexecutioncode -eq $true) {
         # update executon code with giving params in kvurl
-
+        upload_adf_execution_code -armtemplate $armtemplate -parameters $parameters -kvurl $kvurl
 
     } else {
         
