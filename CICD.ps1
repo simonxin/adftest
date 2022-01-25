@@ -405,7 +405,7 @@ function upload_adf_execution_code {
                     $secret = Get-AzKeyVaultSecret -VaultName $vaultname -name $secretname 
                     $connectstring = $secret.SecretValueText
 
-                    write-host $connectstring
+                    write-host $secret
         
                     $ctx = New-AzStorageContext -ConnectionString $connectstring
                     $filename =  $executionfile.blob.split("/")[-1].tostring()
