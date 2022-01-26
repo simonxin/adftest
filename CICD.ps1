@@ -569,7 +569,8 @@ function start_ADF {
     param (
         [Parameter(Mandatory=$true)][string]$armtemplate,
         [Parameter(Mandatory=$true)][string]$DataFactoryName,
-        [Parameter(Mandatory=$true)][string]$ResourceGroupName
+        [Parameter(Mandatory=$true)][string]$ResourceGroupName,
+        [Parameter(Mandatory=$true)][string]$environment
     )
 
     $templateJson = Get-Content $armTemplate | ConvertFrom-Json
