@@ -460,10 +460,16 @@
 				"annotations": [],
 				"type": "AzureKeyVault",
 				"typeProperties": {
-					"baseUrl": "[parameters('idgmckeystore_properties_typeProperties_baseUrl')]"
+					"baseUrl": "[parameters('idgmckeystore_properties_typeProperties_baseUrl')]",
+					"credential": {
+						"referenceName": "msiidentiy",
+						"type": "CredentialReference"
+					}
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/credentials/msiidentiy')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/idgmcstr001dev')]",
