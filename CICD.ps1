@@ -533,7 +533,8 @@ function start_ADF {
         }
     }
 
-    #Deleted resources
+  
+        #Deleted resources
         #pipelines
         Write-Host "Getting pipelines"
         $pipelinesADF = Get-SortedPipelines -DataFactoryName $DataFactoryName -ResourceGroupName $ResourceGroupName
@@ -564,6 +565,8 @@ function start_ADF {
         $integrationruntimesNames = $integrationruntimesTemplate | ForEach-Object {$_.name.Substring(37, $_.name.Length-40)}
         $deletedintegrationruntimes = $integrationruntimesADF | Where-Object { $integrationruntimesNames -notcontains $_.Name }
 
+    # keep all resource deletion as it is in dev env 
+    if ($enviroment -eq 'dev') {
         #Delete resources
         Write-Host "Deleting triggers"
         $triggersToDelete | ForEach-Object { 
@@ -607,36 +610,97 @@ function start_ADF {
             Write-Host "Deleting integration runtime " $_.Name
             Remove-AzDataFactoryV2IntegrationRuntime -Name $_.Name -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Force 
         }
-
-        if ($deleteDeployment -eq $true) {
-            Write-Host "Deleting ARM deployment ... under resource group: " $ResourceGroupName
-            $deployments = Get-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName
-            $deploymentsToConsider = $deployments | Where { $_.DeploymentName -like "ArmTemplate_master*" -or $_.DeploymentName -like "ArmTemplateForFactory*" } | Sort-Object -Property Timestamp -Descending
-            
-            if ($deploymentsToConsider) { 
-
-                $deploymentName = $deploymentsToConsider[0].DeploymentName
-
-                Write-Host "Deployment to be deleted: " $deploymentName
-                $deploymentOperations = Get-AzResourceGroupDeploymentOperation -DeploymentName $deploymentName -ResourceGroupName $ResourceGroupName
-                $deploymentsToDelete = $deploymentOperations | Where { $_.properties.targetResource.id -like "*Microsoft.Resources/deployments*" }
-    
-                $deploymentsToDelete | ForEach-Object { 
-                    Write-host "Deleting inner deployment: " $_.properties.targetResource.id
-                    Remove-AzResourceGroupDeployment -Id $_.properties.targetResource.id
+    } elseif ($enviroment -eq 'test') {
+        #skip delete IR
+        Write-Host "Deleting triggers"
+        $triggersToDelete | ForEach-Object { 
+            Write-Host "Deleting trigger "  $_.Name
+            $trig = Get-AzDataFactoryV2Trigger -name $_.Name -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName
+            if ($trig.RuntimeState -eq "Started") {
+                if ($_.TriggerType -eq "BlobEventsTrigger" -or $_.TriggerType -eq "CustomEventsTrigger") {
+                    Write-Host "Unsubscribing trigger" $_.Name "from events"
+                    $status = Remove-AzDataFactoryV2TriggerSubscription -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Name $_.Name
+                    while ($status.Status -ne "Disabled"){
+                        Start-Sleep -s 15
+                        $status = Get-AzDataFactoryV2TriggerSubscriptionStatus -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Name $_.Name
+                    }
                 }
-                Write-Host "Deleting deployment: " $deploymentName
-                Remove-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -Name $deploymentName
-
-            } else {
-                write-host "skip as no new ARM deployment from devops"
+                Stop-AzDataFactoryV2Trigger -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Name $_.Name -Force 
             }
-
+            Remove-AzDataFactoryV2Trigger -Name $_.Name -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Force 
+        }
+        Write-Host "Deleting pipelines"
+        $deletedpipelines | ForEach-Object { 
+            Write-Host "Deleting pipeline " $_.Name
+            Remove-AzDataFactoryV2Pipeline -Name $_.Name -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Force 
+        }
+        Write-Host "Deleting dataflows"
+        $deleteddataflow | ForEach-Object { 
+            Write-Host "Deleting dataflow " $_.Name
+            Remove-AzDataFactoryV2DataFlow -Name $_.Name -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Force 
+        }
+        Write-Host "Deleting datasets"
+        $deleteddataset | ForEach-Object { 
+            Write-Host "Deleting dataset " $_.Name
+            Remove-AzDataFactoryV2Dataset -Name $_.Name -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Force 
+        }
+        Write-Host "Deleting linked services"
+        $deletedlinkedservices | ForEach-Object { 
+            Write-Host "Deleting Linked Service " $_.Name
+            Remove-AzDataFactoryV2LinkedService -Name $_.Name -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Force 
         }
 
-        #Start active triggers - after cleanup efforts
-        Write-Host "Starting active triggers"
-        $triggersToStart | ForEach-Object { 
+    } else {
+        # delete triggers only on production
+        Write-Host "Deleting triggers"
+        $triggersToDelete | ForEach-Object { 
+            Write-Host "Deleting trigger "  $_.Name
+            $trig = Get-AzDataFactoryV2Trigger -name $_.Name -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName
+            if ($trig.RuntimeState -eq "Started") {
+                if ($_.TriggerType -eq "BlobEventsTrigger" -or $_.TriggerType -eq "CustomEventsTrigger") {
+                    Write-Host "Unsubscribing trigger" $_.Name "from events"
+                    $status = Remove-AzDataFactoryV2TriggerSubscription -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Name $_.Name
+                    while ($status.Status -ne "Disabled"){
+                        Start-Sleep -s 15
+                        $status = Get-AzDataFactoryV2TriggerSubscriptionStatus -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Name $_.Name
+                    }
+                }
+                Stop-AzDataFactoryV2Trigger -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Name $_.Name -Force 
+            }
+            Remove-AzDataFactoryV2Trigger -Name $_.Name -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Force 
+        }
+    }
+
+    # remove deployment from target resource group
+    if ($deleteDeployment -eq $true) {
+        Write-Host "Deleting ARM deployment ... under resource group: " $ResourceGroupName
+        $deployments = Get-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName
+        $deploymentsToConsider = $deployments | Where { $_.DeploymentName -like "ArmTemplate_master*" -or $_.DeploymentName -like "ArmTemplateForFactory*" } | Sort-Object -Property Timestamp -Descending
+        
+        if ($deploymentsToConsider) { 
+
+            $deploymentName = $deploymentsToConsider[0].DeploymentName
+
+            Write-Host "Deployment to be deleted: " $deploymentName
+            $deploymentOperations = Get-AzResourceGroupDeploymentOperation -DeploymentName $deploymentName -ResourceGroupName $ResourceGroupName
+            $deploymentsToDelete = $deploymentOperations | Where { $_.properties.targetResource.id -like "*Microsoft.Resources/deployments*" }
+
+            $deploymentsToDelete | ForEach-Object { 
+                Write-host "Deleting inner deployment: " $_.properties.targetResource.id
+                Remove-AzResourceGroupDeployment -Id $_.properties.targetResource.id
+            }
+            Write-Host "Deleting deployment: " $deploymentName
+            Remove-AzResourceGroupDeployment -ResourceGroupName $ResourceGroupName -Name $deploymentName
+
+        } else {
+            write-host "skip as no new ARM deployment from devops"
+        }
+
+    }
+
+    #Start active triggers - after cleanup efforts
+    Write-Host "Starting active triggers"
+    $triggersToStart | ForEach-Object { 
             if ($_.TriggerType -eq "BlobEventsTrigger" -or $_.TriggerType -eq "CustomEventsTrigger") {
                 Write-Host "Subscribing" $_.Name "to events"
                 $status = Add-AzDataFactoryV2TriggerSubscription -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Name $_.Name
@@ -647,7 +711,7 @@ function start_ADF {
             }
             Write-Host "Starting trigger" $_.Name
             Start-AzDataFactoryV2Trigger -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Name $_.Name -Force
-        }
+    }
     
 }
 
@@ -680,10 +744,10 @@ switch ($option) {
         }
       }
     4 { 
-        if ([string]::IsNullOrWhiteSpace($armTemplate) -or [string]::IsNullOrWhiteSpace($DataFactoryName) -or [string]::IsNullOrWhiteSpace($ResourceGroupName)) {
+        if ([string]::IsNullOrWhiteSpace($armTemplate) -or [string]::IsNullOrWhiteSpace($DataFactoryName) -or [string]::IsNullOrWhiteSpace($ResourceGroupName) -or [string]::IsNullOrWhiteSpace($environment)) {
             throw "missing paramters: option 4 (start ADF) need armTemplate, DataFactoryName and ResourceGroupName"
         } else { 
-            start_ADF -armtemplate $armTemplate -DataFactoryName $DataFactoryName -ResourceGroupName $ResourceGroupName
+            start_ADF -armtemplate $armTemplate -DataFactoryName $DataFactoryName -ResourceGroupName $ResourceGroupName -environment $environment
         }
       }
     default {
