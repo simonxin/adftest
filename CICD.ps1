@@ -329,7 +329,21 @@ function get_adf_executon_code_map {
 
 # pull current version execution code to local
 # sample code:
+
+# git steps:
+
+# git init
+# git add remote origin https://github.com/simonxin/adftest
+# git fetch origin adf_publish
+# git checkout adf_publish
+# git pull
+# # put the sample CICD.ps1 in thisl local git repository folder
 # download_adf_execution_code -armtemplate $armtemplate -parameters $parameters
+# git add .
+# git commit -m "update execution code"
+# git push
+
+
 function download_adf_execution_code {
 
     param (
