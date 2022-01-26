@@ -45,6 +45,33 @@
 						"type": "DatasetReference"
 					}
 				]
+			},
+			{
+				"name": "Python1",
+				"type": "DatabricksSparkPython",
+				"dependsOn": [
+					{
+						"activity": "preparehivequery",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pythonFile": "dbfs:/my/pi.py"
+				},
+				"linkedServiceName": {
+					"referenceName": "workspace1",
+					"type": "LinkedServiceReference"
+				}
 			}
 		],
 		"variables": {
