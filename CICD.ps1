@@ -34,7 +34,8 @@ param
     [parameter(Mandatory = $false)] [String] $DataFactoryName,
     [Parameter(Mandatory=$false)][string]$kvurl, 
     [parameter(Mandatory = $false)] [string] $rootexecutioncodepath="executioncode", 
-    [parameter(Mandatory = $true)][ValidateSet(1,2,3,4)] [int] $option
+    [parameter(Mandatory = $false)] [ValidateSet("dev","test","prd")] [String] $enviroment="dev",
+    [parameter(Mandatory = $true)][ValidateSet(0,1,2,3,4,5)] [int] $option
 )
 
 function getPipelineDependencies {
@@ -454,51 +455,6 @@ function upload_adf_execution_code {
 }
 
 
-
-
-# push execution code to storage
-function stop_ADF {
-
-    param (
-        [Parameter(Mandatory=$true)][string]$armtemplate,
-        [Parameter(Mandatory=$false)][string]$kvurl="",
-        [Parameter(Mandatory=$false)][string]$rootexecutioncodepath="executioncode"
-    )
-
-    $templateJson = Get-Content $armTemplate | ConvertFrom-Json
-    $resources = $templateJson.resources
-
-    #Triggers 
-    Write-Host "Getting triggers"
-    $triggersInTemplate = $resources | Where-Object { $_.type -eq "Microsoft.DataFactory/factories/triggers" }
-    $triggerNamesInTemplate = $triggersInTemplate | ForEach-Object {$_.name.Substring(37, $_.name.Length-40)}
-
-    $triggersDeployed = Get-SortedTriggers -DataFactoryName $DataFactoryName -ResourceGroupName $ResourceGroupName
-
-    $triggersToStop = $triggersDeployed | Where-Object { $triggerNamesInTemplate -contains $_.Name } | ForEach-Object { 
-        New-Object PSObject -Property @{
-            Name = $_.Name
-            TriggerType = $_.Properties.GetType().Name 
-        }
-    }
-
-    Write-Host "Stopping deployed triggers`n"
-    $triggersToStop | ForEach-Object {
-        if ($_.TriggerType -eq "BlobEventsTrigger" -or $_.TriggerType -eq "CustomEventsTrigger") {
-            Write-Host "Unsubscribing" $_.Name "from events"
-            $status = Remove-AzDataFactoryV2TriggerSubscription -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Name $_.Name
-            while ($status.Status -ne "Disabled"){
-                Start-Sleep -s 15
-                $status = Get-AzDataFactoryV2TriggerSubscriptionStatus -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Name $_.Name
-            }
-        }
-        Write-Host "Stopping trigger" $_.Name
-        Stop-AzDataFactoryV2Trigger -ResourceGroupName $ResourceGroupName -DataFactoryName $DataFactoryName -Name $_.Name -Force
-    }
-
-}
-
-
 # functions to stop ADF before deployment
 function stop_ADF {
 
@@ -577,7 +533,7 @@ function start_ADF {
         }
     }
 
-     #Deleted resources
+    #Deleted resources
         #pipelines
         Write-Host "Getting pipelines"
         $pipelinesADF = Get-SortedPipelines -DataFactoryName $DataFactoryName -ResourceGroupName $ResourceGroupName
@@ -730,6 +686,9 @@ switch ($option) {
             start_ADF -armtemplate $armTemplate -DataFactoryName $DataFactoryName -ResourceGroupName $ResourceGroupName
         }
       }
+    default {
+        Write-Host "load function modules only"
+    }
 }
 
 
