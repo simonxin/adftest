@@ -119,6 +119,9 @@
                     "domain": "=",
                     "newClusterNodeType": "=",
                     "clusterUri": "="
+                },
+                "connectVia":{
+                    "referenceName": "="
                 }
             }
         },
