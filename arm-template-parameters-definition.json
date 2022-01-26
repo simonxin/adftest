@@ -150,5 +150,14 @@
         "properties": {
             "*": "="
         }
+    },
+    "Microsoft.DataFactory/factories/credentials": {
+        "*": {
+            "properties": {
+                "typeProperties": {
+                    "resourceId": "="
+                }
+            }
+        }
     }
 }
