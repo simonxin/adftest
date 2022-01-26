@@ -34,7 +34,7 @@ param
     [parameter(Mandatory = $false)] [String] $DataFactoryName,
     [Parameter(Mandatory=$false)][string]$kvurl, 
     [parameter(Mandatory = $false)] [string] $rootexecutioncodepath="executioncode", 
-    [parameter(Mandatory = $false)] [ValidateSet("dev","test","prd")] [String] $enviroment="dev",
+    [parameter(Mandatory = $false)] [ValidateSet("dev","test","prd")] [String] $environment="dev",
     [parameter(Mandatory = $true)][ValidateSet(0,1,2,3,4,5)] [int] $option
 )
 
