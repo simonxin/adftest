@@ -47,7 +47,7 @@
 				]
 			},
 			{
-				"name": "Python1",
+				"name": "databricktasks",
 				"type": "DatabricksSparkPython",
 				"dependsOn": [
 					{
