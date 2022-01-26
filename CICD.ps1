@@ -686,7 +686,7 @@ switch ($option) {
         if ([string]::IsNullOrWhiteSpace($armTemplate) -or [string]::IsNullOrWhiteSpace($DataFactoryName) -or [string]::IsNullOrWhiteSpace($ResourceGroupName)) {
             throw "missing paramters: option 1 (stop ADF) need armTemplate, DataFactoryName and ResourceGroupName" 
         } else { 
-            stop_ADF -armtemplate $armTemplate -ResourceGroupName -DataFactoryName $DataFactoryName -ResourceGroupName $ResourceGroupNam  
+            stop_ADF -armtemplate $armTemplate -DataFactoryName $DataFactoryName -ResourceGroupName $ResourceGroupName  
         }
       }
     2 { 
@@ -710,7 +710,7 @@ switch ($option) {
         if ([string]::IsNullOrWhiteSpace($armTemplate) -or [string]::IsNullOrWhiteSpace($DataFactoryName) -or [string]::IsNullOrWhiteSpace($ResourceGroupName)) {
             throw "missing paramters: option 4 (start ADF) need armTemplate, DataFactoryName and ResourceGroupName"
         } else { 
-            start_ADF -armtemplate $armTemplate -ResourceGroupName -DataFactoryName $DataFactoryName -ResourceGroupName $ResourceGroupName
+            start_ADF -armtemplate $armTemplate -DataFactoryName $DataFactoryName -ResourceGroupName $ResourceGroupName
         }
       }
 }
