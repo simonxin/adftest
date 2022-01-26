@@ -1,0 +1,22 @@
+{
+	"name": "workspace1",
+	"properties": {
+		"annotations": [],
+		"type": "AzureDatabricks",
+		"typeProperties": {
+			"domain": "https://adb-4624031639111869.1.databricks.azure.cn",
+			"accessToken": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "idgmckeystore",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "Databricks001"
+			},
+			"newClusterNodeType": "Standard_DS3_v2",
+			"newClusterNumOfWorker": "1",
+			"newClusterVersion": "10.0.x-scala2.12",
+			"newClusterInitScripts": []
+		}
+	}
+}
