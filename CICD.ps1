@@ -166,7 +166,7 @@ function Get-SortedLinkedServices {
 }
 
 
-
+# scripts to map execution code to a hash table
 function get_adf_executon_code_map {
     param (
         [Parameter(Mandatory=$true)][string]$armtemplate,
@@ -262,6 +262,7 @@ function get_adf_executon_code_map {
                             activity =  $activity.name
                             keyvault =  $keyvault
                             secret = $secret
+                            storetype = 'azurestorage'
                             container = $container
                             blob = $blob
                         }    
@@ -313,6 +314,7 @@ function get_adf_executon_code_map {
                             activity =  $activity.name
                             keyvault =  $keyvault
                             secret = $secret
+                            storetype = 'azurestorage'
                             container = $container
                             blob = $blob
                         }    
@@ -324,18 +326,50 @@ function get_adf_executon_code_map {
 
 
                 if ($activity.type -eq 'DatabricksSparkPython') {
-                    write-host "skip. still in developing"
-                    # mock code: 
-                    # export DATABRICKS_TOKEN=dapi1234567890ab1cde2f3ab456c7d89efa
-                    # curl -X GET --header "Authorization: Bearer $DATABRICKS_TOKEN" https://abc-d1e2345f-a6b2.cloud.databricks.azure.cn/api/2.0/clusters/list
-                    # curl --netrc -X POST https://dbc-a1b2345c-d6e7.cloud.databricks.com/api/2.0/dbfs/create --data '{ "path": "/my/p1.py", "overwrite": true }'
+
+                    # map execution script path
+                    $pythonFile = $activity.typeProperties.pythonFile
+
+                    # get the target storage linked service
+                    $workspace_reference = $activity.linkedServiceName.referenceName
+                    # get the linked service for storage
+                    $workspacelink = $resourcehasharray['Microsoft.DataFactory/factories/linkedservices'] | where {$_.name -like $workspace_reference}
+                    
+                    $connectstring = $workspacelink.properties.typeProperties.accessToken
+
+                    if ( $connectstring.type -eq 'AzureKeyVaultSecret') {
+                        # get the keyvault store url and secret name for connect string
+                        $keyvaultlink = $resourcehasharray['Microsoft.DataFactory/factories/linkedservices'] | where {$_.name -like $connectstring.store.referenceName} 
+
+                        # override vault url if existing
+                        if ($kvurl -ne "") {
+                            $keyvault = $kvurl
+                        } else {
+                            $keyvault = $keyvaultlink.properties.typeProperties.baseUrl
+                        }
+
+                        $secret = $connectstring.secretName
+
+                        # add the execution code reference
+                        if (!$execution_code_hash[$activity.type]) {
+                            $execution_code_hash[$activity.type] = @()
+                        }
+                        
+                        # map the execution code for the target execution code 
+                        $execution_code_hash[$activity.type]+=[PSCustomObject]@{
+                            pipeline = $pipeline.name
+                            activity =  $activity.name
+                            keyvault =  $keyvault
+                            secret = $secret
+                            storetype = 'databricksdbfs'
+                            pythonFile = $pythonFile
+                        }    
+                    } else {
+                        # skip as the script storage is not using keyvault secret for connect string reference
+                        continue;
+                    }
 
                 }
-
-
-                
-        
-        
             }
     }
     
@@ -386,14 +420,28 @@ function download_adf_execution_code {
             $secret = Get-AzKeyVaultSecret -VaultName $vaultname -name $secretname -AsPlainText
             $connectstring = $secret
 
-            # make destination as a local file path
-            $filename =  $executionfile.blob.split("/")[-1].tostring()
-            $destination = $localpath + "/" + $filename 
+            if ( $executionfile.storetype -eq 'databricksdbfs') {
+                write-host "skip. still in developing"
+                # mock code: 
+                # export DATABRICKS_TOKEN=dapi1234567890ab1cde2f3ab456c7d89efa
+                # curl -X GET --header "Authorization: Bearer $DATABRICKS_TOKEN" https://abc-d1e2345f-a6b2.cloud.databricks.azure.cn/api/2.0/clusters/list
+                # curl --netrc -X GET https://dbc-a1b2345c-d6e7.cloud.databricks.com/api/2.0/dbfs/my/p1.py"}'                
 
-            # download the execution code from storage and save to local path
-            $ctx = New-AzStorageContext -ConnectionString $connectstring
-            get-AzStorageBlobContent -Container $executionfile.container -Blob $executionfile.blob -Context $ctx -Destination $destination -force
-       }
+            }
+
+            if ( $executionfile.storetype -eq 'azurestorage') {
+                # make destination as a local file path
+                $filename =  $executionfile.blob.split("/")[-1].tostring()
+                $destination = $localpath + "/" + $filename 
+
+                # download the execution code from storage and save to local path
+                $ctx = New-AzStorageContext -ConnectionString $connectstring
+                get-AzStorageBlobContent -Container $executionfile.container -Blob $executionfile.blob -Context $ctx -Destination $destination -force
+
+            }
+
+       
+        }
 
     }
 
@@ -440,12 +488,27 @@ function upload_adf_execution_code {
                     foreach ($file in $files) {
                         # upload the exact file only
                         if ($file.name -like $filename) {
-                            # make a copy of current script to archived or with a release number
-                            write-host "updated file $filename to " $executionfile.blob
-                            $archived_blob = $executionfile.blob.tostring() +"_archived"
-                            Start-AzStorageBlobCopy -SrcBlob  $executionfile.blob -SrcContainer  $executionfile.container -DestContainer  $executionfile.container -DestBlob $archived_blob -Context $ctx -force -erroraction ignore
-                            # upload the script content
-                            set-AzStorageBlobContent -File $file.fullname -Container $executionfile.container -Blob $executionfile.blob -Context $ctx -force
+                        
+                            if ( $executionfile.storetype -eq 'azurestorage') {
+                                # make a copy of current script to archived or with a release number
+                                write-host "updated file $filename to " $executionfile.blob
+                                $archived_blob = $executionfile.blob.tostring() +"_archived"
+                                Start-AzStorageBlobCopy -SrcBlob  $executionfile.blob -SrcContainer  $executionfile.container -DestContainer  $executionfile.container -DestBlob $archived_blob -Context $ctx -force -erroraction ignore
+                                # upload the script content
+                                set-AzStorageBlobContent -File $file.fullname -Container $executionfile.container -Blob $executionfile.blob -Context $ctx -force
+                                       
+                            }
+
+                            if ( $executionfile.storetype -eq 'databricksdbfs') {
+
+                                write-host "skip. still in developing"
+                                # mock code: 
+                                # export DATABRICKS_TOKEN=dapi1234567890ab1cde2f3ab456c7d89efa
+                                # curl -X GET --header "Authorization: Bearer $DATABRICKS_TOKEN" https://abc-d1e2345f-a6b2.cloud.databricks.azure.cn/api/2.0/clusters/list
+                                # curl --netrc -X POST https://dbc-a1b2345c-d6e7.cloud.databricks.com/api/2.0/dbfs/create --data '{ "path": "/my/p1.py", "overwrite": true }'
+
+                            }                        
+                        
                         }
                     }
                 }
@@ -751,7 +814,13 @@ switch ($option) {
         }
       }
     default {
-        Write-Host "load function modules only"
+        if ([string]::IsNullOrWhiteSpace($armTemplate) -or [string]::IsNullOrWhiteSpace($parameters) -or [string]::IsNullOrWhiteSpace($kvurl)) {
+            throw "missing paramters: option 3 (pull execution code) need armTemplate, parameters, kvurl and rootexecutioncodepath"
+        } else { 
+            Write-Host "load execution code map only"
+            get_adf_executon_code_map -armtemplate $armtemplate -parameters $parameters -kvurl $kvurl 
+        }
+
     }
 }
 
