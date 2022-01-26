@@ -382,7 +382,6 @@ function download_adf_execution_code {
 }
 
 
-
 # push execution code to storage
 function upload_adf_execution_code {
 
@@ -481,7 +480,6 @@ function stop_ADF {
     }
 
 }
-
 
 
 # functions to stop ADF before deployment
