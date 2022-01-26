@@ -152,12 +152,10 @@
         }
     },
     "Microsoft.DataFactory/factories/credentials": {
-        "*": {
-            "properties": {
+        "properties": {
                 "typeProperties": {
                     "resourceId": "="
                 }
             }
-        }
-    }
+        }    
 }
