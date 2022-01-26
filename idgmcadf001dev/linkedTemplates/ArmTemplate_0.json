@@ -23,6 +23,18 @@
 			"type": "string",
 			"defaultValue": "mcvmreinf"
 		},
+		"workspace1_properties_typeProperties_domain": {
+			"type": "string",
+			"defaultValue": "https://adb-4624031639111869.1.databricks.azure.cn"
+		},
+		"workspace1_properties_typeProperties_newClusterNodeType": {
+			"type": "string",
+			"defaultValue": "Standard_DS3_v2"
+		},
+		"idgmcgdi001dev_properties_typeProperties_clusterUri": {
+			"type": "string",
+			"defaultValue": "https://idgmcgdi001dev.azurehdinsight.cn"
+		},
 		"idgmcgdi001dev_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "admin"
@@ -132,7 +144,7 @@
 				"annotations": [],
 				"type": "AzureDatabricks",
 				"typeProperties": {
-					"domain": "https://adb-4624031639111869.1.databricks.azure.cn",
+					"domain": "[parameters('workspace1_properties_typeProperties_domain')]",
 					"accessToken": {
 						"type": "AzureKeyVaultSecret",
 						"store": {
@@ -141,7 +153,7 @@
 						},
 						"secretName": "Databricks001"
 					},
-					"newClusterNodeType": "Standard_DS3_v2",
+					"newClusterNodeType": "[parameters('workspace1_properties_typeProperties_newClusterNodeType')]",
 					"newClusterNumOfWorker": "1",
 					"newClusterVersion": "10.0.x-scala2.12",
 					"newClusterInitScripts": []
@@ -254,7 +266,7 @@
 				"annotations": [],
 				"type": "HDInsight",
 				"typeProperties": {
-					"clusterUri": "https://idgmcgdi001dev.azurehdinsight.cn",
+					"clusterUri": "[parameters('idgmcgdi001dev_properties_typeProperties_clusterUri')]",
 					"userName": "[parameters('idgmcgdi001dev_properties_typeProperties_userName')]",
 					"password": {
 						"type": "AzureKeyVaultSecret",
@@ -509,7 +521,8 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"pythonFile": "dbfs:/my/pi.py"
+							"pythonFile": "dbfs:/my/pi.py",
+							"parameters": []
 						},
 						"linkedServiceName": {
 							"referenceName": "workspace1",

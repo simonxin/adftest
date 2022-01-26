@@ -5,6 +5,9 @@
 		"factoryName": {
 			"value": "idgmcadf001dev"
 		},
+		"idgmcgdi001dev_properties_typeProperties_clusterUri": {
+			"value": "https://idgmcgdi001dev.azurehdinsight.cn"
+		},
 		"idgmcgdi001dev_properties_typeProperties_userName": {
 			"value": "admin"
 		},
@@ -19,6 +22,12 @@
 		},
 		"remote_storage_properties_typeProperties_connectionString_secretName": {
 			"value": "mcvmreinf"
+		},
+		"workspace1_properties_typeProperties_domain": {
+			"value": "https://adb-4624031639111869.1.databricks.azure.cn"
+		},
+		"workspace1_properties_typeProperties_newClusterNodeType": {
+			"value": "Standard_DS3_v2"
 		},
 		"containerUri": {
 			"value": ""

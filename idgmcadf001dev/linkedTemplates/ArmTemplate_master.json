@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "idgmcadf001dev"
 		},
+		"idgmcgdi001dev_properties_typeProperties_clusterUri": {
+			"type": "string",
+			"defaultValue": "https://idgmcgdi001dev.azurehdinsight.cn"
+		},
 		"idgmcgdi001dev_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "admin"
@@ -26,6 +30,14 @@
 		"remote_storage_properties_typeProperties_connectionString_secretName": {
 			"type": "string",
 			"defaultValue": "mcvmreinf"
+		},
+		"workspace1_properties_typeProperties_domain": {
+			"type": "string",
+			"defaultValue": "https://adb-4624031639111869.1.databricks.azure.cn"
+		},
+		"workspace1_properties_typeProperties_newClusterNodeType": {
+			"type": "string",
+			"defaultValue": "Standard_DS3_v2"
 		},
 		"containerUri": {
 			"type": "string",
@@ -65,6 +77,15 @@
 					},
 					"remote_storage_properties_typeProperties_connectionString_secretName": {
 						"value": "[parameters('remote_storage_properties_typeProperties_connectionString_secretName')]"
+					},
+					"workspace1_properties_typeProperties_domain": {
+						"value": "[parameters('workspace1_properties_typeProperties_domain')]"
+					},
+					"workspace1_properties_typeProperties_newClusterNodeType": {
+						"value": "[parameters('workspace1_properties_typeProperties_newClusterNodeType')]"
+					},
+					"idgmcgdi001dev_properties_typeProperties_clusterUri": {
+						"value": "[parameters('idgmcgdi001dev_properties_typeProperties_clusterUri')]"
 					},
 					"idgmcgdi001dev_properties_typeProperties_userName": {
 						"value": "[parameters('idgmcgdi001dev_properties_typeProperties_userName')]"

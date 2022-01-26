@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "idgmcadf001dev"
 		},
+		"idgmcgdi001dev_properties_typeProperties_clusterUri": {
+			"type": "string",
+			"defaultValue": "https://idgmcgdi001dev.azurehdinsight.cn"
+		},
 		"idgmcgdi001dev_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "admin"
@@ -26,6 +30,14 @@
 		"remote_storage_properties_typeProperties_connectionString_secretName": {
 			"type": "string",
 			"defaultValue": "mcvmreinf"
+		},
+		"workspace1_properties_typeProperties_domain": {
+			"type": "string",
+			"defaultValue": "https://adb-4624031639111869.1.databricks.azure.cn"
+		},
+		"workspace1_properties_typeProperties_newClusterNodeType": {
+			"type": "string",
+			"defaultValue": "Standard_DS3_v2"
 		}
 	},
 	"variables": {
@@ -264,7 +276,8 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"pythonFile": "dbfs:/my/pi.py"
+							"pythonFile": "dbfs:/my/pi.py",
+							"parameters": []
 						},
 						"linkedServiceName": {
 							"referenceName": "workspace1",
@@ -393,7 +406,7 @@
 				"annotations": [],
 				"type": "HDInsight",
 				"typeProperties": {
-					"clusterUri": "https://idgmcgdi001dev.azurehdinsight.cn",
+					"clusterUri": "[parameters('idgmcgdi001dev_properties_typeProperties_clusterUri')]",
 					"userName": "[parameters('idgmcgdi001dev_properties_typeProperties_userName')]",
 					"password": {
 						"type": "AzureKeyVaultSecret",
@@ -497,6 +510,33 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/workspace1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureDatabricks",
+				"typeProperties": {
+					"domain": "[parameters('workspace1_properties_typeProperties_domain')]",
+					"accessToken": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "idgmckeystore",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "Databricks001"
+					},
+					"newClusterNodeType": "[parameters('workspace1_properties_typeProperties_newClusterNodeType')]",
+					"newClusterNumOfWorker": "1",
+					"newClusterVersion": "10.0.x-scala2.12",
+					"newClusterInitScripts": []
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/idgmckeystore')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/job_schedule_1')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
@@ -542,33 +582,6 @@
 				}
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/workspace1')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureDatabricks",
-				"typeProperties": {
-					"domain": "https://adb-4624031639111869.1.databricks.azure.cn",
-					"accessToken": {
-						"type": "AzureKeyVaultSecret",
-						"store": {
-							"referenceName": "idgmckeystore",
-							"type": "LinkedServiceReference"
-						},
-						"secretName": "Databricks001"
-					},
-					"newClusterNodeType": "Standard_DS3_v2",
-					"newClusterNumOfWorker": "1",
-					"newClusterVersion": "10.0.x-scala2.12",
-					"newClusterInitScripts": []
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/idgmckeystore')]"
-			]
 		}
 	]
 }
