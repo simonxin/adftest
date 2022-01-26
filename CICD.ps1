@@ -187,6 +187,8 @@ function get_adf_executon_code_map {
     $resources = $($adftemplate | convertfrom-json).resources
     # temnplate objects ARM structure referring:
     # https://docs.microsoft.com/en-us/azure/templates/microsoft.datafactory/2018-06-01/factories/pipelines?tabs=json
+    # and 
+    # https://docs.microsoft.com/en-us/azure/data-factory/transform-data-databricks-notebook
 
     $resourcehasharray = @{}
     $execution_code_hash=@{}
@@ -318,7 +320,22 @@ function get_adf_executon_code_map {
                         continue;
                     }
                 }
-        }
+
+
+                if ($activity.type -eq 'DatabricksSparkPython') {
+                    write-host "skip. still in developing"
+                    # mock code: 
+                    # export DATABRICKS_TOKEN=dapi1234567890ab1cde2f3ab456c7d89efa
+                    # curl -X GET --header "Authorization: Bearer $DATABRICKS_TOKEN" https://abc-d1e2345f-a6b2.cloud.databricks.azure.cn/api/2.0/clusters/list
+                    # curl --netrc -X POST https://dbc-a1b2345c-d6e7.cloud.databricks.com/api/2.0/dbfs/create --data '{ "path": "/my/p1.py", "overwrite": true }'
+
+                }
+
+
+                
+        
+        
+            }
     }
     
     return  $execution_code_hash
