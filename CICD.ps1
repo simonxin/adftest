@@ -23,7 +23,7 @@
 # Sample parameters:
 # $armtemplate = "C:\GitHub\adftest\idgmcadf001dev\ARMTemplateForFactory.json"
 # $parameters = "C:\GitHub\adftest\idgmcadf001dev\ARMTemplateParametersForFactory.json"
-# get_adf_executon_code_map -armtemplate $armtemplate -parameters $parameters
+# ./CDCD.ps1 -option #num <parameter set>
 
 
 param
@@ -32,11 +32,9 @@ param
     [parameter(Mandatory = $false)] [String] $parameters,
     [parameter(Mandatory = $false)] [String] $ResourceGroupName,
     [parameter(Mandatory = $false)] [String] $DataFactoryName,
-    [parameter(Mandatory = $false)] [Bool] $predeployment=$true,
-    [parameter(Mandatory = $false)] [Bool] $deleteDeployment=$false,
-    [parameter(Mandatory = $false)] [Bool] $updateexecutioncode=$false,
-    [parameter(Mandatory = $false)] [string] $rootexecutioncodepath="executioncode",
-    [Parameter(Mandatory=$false)][string]$kvurl
+    [Parameter(Mandatory=$false)][string]$kvurl, 
+    [parameter(Mandatory = $false)] [string] $rootexecutioncodepath="executioncode", 
+    [parameter(Mandatory = $true)][ValidateSet(1,2,3,4)] [int] $option
 )
 
 function getPipelineDependencies {
@@ -367,8 +365,8 @@ function download_adf_execution_code {
 
             $vaultname = $executionfile.keyvault.split(".",2)[0].split("//")[-1].tostring()
             $secretname =$executionfile.secret
-            $secret = Get-AzKeyVaultSecret -VaultName $vaultname -name $secretname 
-            $connectstring = $secret.SecretValueText
+            $secret = Get-AzKeyVaultSecret -VaultName $vaultname -name $secretname -AsPlainText
+            $connectstring = $secret
 
             # make destination as a local file path
             $filename =  $executionfile.blob.split("/")[-1].tostring()
@@ -465,18 +463,6 @@ function stop_ADF {
         New-Object PSObject -Property @{
             Name = $_.Name
             TriggerType = $_.Properties.GetType().Name 
-        }
-    }
-    $triggersToDelete = $triggersDeployed | Where-Object { $triggerNamesInTemplate -notcontains $_.Name } | ForEach-Object { 
-        New-Object PSObject -Property @{
-            Name = $_.Name
-            TriggerType = $_.Properties.GetType().Name 
-        }
-    }
-    $triggersToStart = $triggersInTemplate | Where-Object { $_.properties.runtimeState -eq "Started" -and ($_.properties.pipelines.Count -gt 0 -or $_.properties.pipeline.pipelineReference -ne $null)} | ForEach-Object { 
-        New-Object PSObject -Property @{
-            Name = $_.name.Substring(37, $_.name.Length-40)
-            TriggerType = $_.Properties.type
         }
     }
 
@@ -695,18 +681,40 @@ function start_ADF {
 }
 
 
-
 # main flows to handle deployment condition
 
-if ($predeployment -eq $true) {
-    stop_ADF -armtemplate $armTemplate -ResourceGroupName -DataFactoryName $DataFactoryName -ResourceGroupName $ResourceGroupName
-} elseif ($updateexecutioncode -eq $true) {
-    # update executon code with giving params in kvurl
-    Write-Host "upload execution code from local git source"
-    upload_adf_execution_code -armtemplate $armtemplate -parameters $parameters -kvurl $kvurl -rootexecutioncodepath $rootexecutioncodepath
-} elseif ($downloadexecutoncode -eq $true) {
-    Write-Host "sync execution code from cloud to local git repo"
-    download_adf_execution_code -armtemplate $armtemplate -parameters $parameters -kvurl $kvurl -rootexecutioncodepath $rootexecutioncodepath
-} else {
-    start_ADF -armtemplate $armTemplate -ResourceGroupName -DataFactoryName $DataFactoryName -ResourceGroupName $ResourceGroupName
+switch ($option) {
+    1 { 
+        if ([string]::IsNullOrWhiteSpace($armTemplate) -or [string]::IsNullOrWhiteSpace($DataFactoryName) -or [string]::IsNullOrWhiteSpace($ResourceGroupName)) {
+            throw "missing paramters: option 1 (stop ADF) need armTemplate, DataFactoryName and ResourceGroupName" 
+        } else { 
+            stop_ADF -armtemplate $armTemplate -ResourceGroupName -DataFactoryName $DataFactoryName -ResourceGroupName $ResourceGroupNam  
+        }
+      }
+    2 { 
+        if ([string]::IsNullOrWhiteSpace($armTemplate) -or [string]::IsNullOrWhiteSpace($parameters) -or [string]::IsNullOrWhiteSpace($kvurl) -or [string]::IsNullOrWhiteSpace($rootexecutioncodepath)) {
+            throw "missing paramters: option 2 (update execution code) need armTemplate, parameters, kvurl and rootexecutioncodepath"
+        } else { 
+            Write-Host "upload execution code from local git source"
+            upload_adf_execution_code -armtemplate $armtemplate -parameters $parameters -kvurl $kvurl -rootexecutioncodepath $rootexecutioncodepath
+        }
+      }
+    3 { 
+        if ([string]::IsNullOrWhiteSpace($armTemplate) -or [string]::IsNullOrWhiteSpace($parameters) -or [string]::IsNullOrWhiteSpace($kvurl) -or [string]::IsNullOrWhiteSpace($rootexecutioncodepath)) {
+            throw "missing paramters: option 3 (pull execution code) need armTemplate, parameters, kvurl and rootexecutioncodepath"
+        } else { 
+            Write-Host "sync execution code from cloud to local git repo"
+            download_adf_execution_code -armtemplate $armtemplate -parameters $parameters -kvurl $kvurl -rootexecutioncodepath $rootexecutioncodepath
+            
+        }
+      }
+    4 { 
+        if ([string]::IsNullOrWhiteSpace($armTemplate) -or [string]::IsNullOrWhiteSpace($DataFactoryName) -or [string]::IsNullOrWhiteSpace($ResourceGroupName)) {
+            throw "missing paramters: option 4 (start ADF) need armTemplate, DataFactoryName and ResourceGroupName"
+        } else { 
+            start_ADF -armtemplate $armTemplate -ResourceGroupName -DataFactoryName $DataFactoryName -ResourceGroupName $ResourceGroupName
+        }
+      }
 }
+
+
