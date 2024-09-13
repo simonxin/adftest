@@ -37,7 +37,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('getexternaltables').output.count",
+						"value": "@activity('getexternaltables').output.Value",
 						"type": "Expression"
 					},
 					"batchCount": 1,
