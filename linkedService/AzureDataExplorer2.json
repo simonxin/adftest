@@ -1,0 +1,15 @@
+{
+	"name": "AzureDataExplorer2",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureDataExplorer",
+		"typeProperties": {
+			"endpoint": "https://idgmckusto002.chinaeast2.kusto.chinacloudapi.cn",
+			"tenant": "954ddad8-66d7-47a8-8f9f-1316152d9587",
+			"servicePrincipalId": "6f0dc6ba-fa33-4fb5-b069-92a263d2c53b",
+			"database": "test",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDVEMkM4MzhBLTQ4RkUtNEIwRi1BREE4LUVGNTgzOTAyOEE5OF82N2NhZDRhOS01N2RlLTQwMzUtOWNkMS0zZTNhMzU4MDM3MjYiDQp9"
+		}
+	}
+}
