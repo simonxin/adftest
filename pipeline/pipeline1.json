@@ -15,7 +15,7 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"command": ".show external  table Pblob artifacts",
+					"command": ".show external  table Pblob artifacts\n| project Uri",
 					"commandTimeout": "00:20:00"
 				},
 				"linkedServiceName": {
@@ -26,14 +26,7 @@
 			{
 				"name": "Azure Data Explorer Command2",
 				"type": "AzureDataExplorerCommand",
-				"dependsOn": [
-					{
-						"activity": "Azure Data Explorer Command1",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
