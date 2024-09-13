@@ -15,7 +15,7 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"command": "external_table('Pblob')",
+					"command": ".show continuous-export MyExport",
 					"commandTimeout": "00:20:00"
 				},
 				"linkedServiceName": {
