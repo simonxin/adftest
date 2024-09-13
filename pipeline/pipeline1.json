@@ -15,11 +15,39 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"command": ".show continuous-export MyExport",
+					"command": ".show external  table Pblob artifacts",
 					"commandTimeout": "00:20:00"
 				},
 				"linkedServiceName": {
 					"referenceName": "AzureDataExplorer1",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Azure Data Explorer Command2",
+				"type": "AzureDataExplorerCommand",
+				"dependsOn": [
+					{
+						"activity": "Azure Data Explorer Command1",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"command": ".show table P artifacts",
+					"commandTimeout": "00:20:00"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDataExplorer2",
 					"type": "LinkedServiceReference"
 				}
 			}
