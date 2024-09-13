@@ -56,7 +56,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"command": {
-									"value": ".ingest into table P (\n    h'@{item().value}'\n)",
+									"value": ".ingest into table P (\n    h'item().value'\n)",
 									"type": "Expression"
 								},
 								"commandTimeout": "00:20:00"
