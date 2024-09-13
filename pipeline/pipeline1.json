@@ -32,12 +32,6 @@
 						"dependencyConditions": [
 							"Completed"
 						]
-					},
-					{
-						"activity": "Set variable1",
-						"dependencyConditions": [
-							"Completed"
-						]
 					}
 				],
 				"userProperties": [],
@@ -62,7 +56,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"command": {
-									"value": ".ingest into table P (\n    h'item().value'\n)",
+									"value": ".ingest into table P (\n    h'item().value?sp=rw&st=2024-09-13T04:48:33Z&se=2024-09-13T12:48:33Z&spr=https&sv=2022-11-02&sr=c&sig=GHFudWF60A5R7pNA8UazMjQ5ZWKd5in8lyIXtPlaRBI%3D'\n)",
 									"type": "Expression"
 								},
 								"commandTimeout": "00:20:00"
@@ -73,20 +67,6 @@
 							}
 						}
 					]
-				}
-			},
-			{
-				"name": "Set variable1",
-				"type": "SetVariable",
-				"dependsOn": [],
-				"policy": {
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "k1",
-					"value": "sp=rw&st=2024-09-13T04:48:33Z&se=2024-09-13T12:48:33Z&spr=https&sv=2022-11-02&sr=c&sig=GHFudWF60A5R7pNA8UazMjQ5ZWKd5in8lyIXtPlaRBI%3D"
 				}
 			}
 		],
